@@ -19,6 +19,11 @@ class Course extends Model
         return $this->belongsToMany(User::class, 'courses_users')->withPivot('role', 'subject_id')->withTimestamps();
     }
 
+    public function FunctionName()
+    {
+        return $this->hasMany(User::class, 'lastCourse_id');
+    }
+
     public function subjects()
     {
         return $this->belongsToMany(Subject::class, 'courses_subjects');
@@ -36,6 +41,6 @@ class Course extends Model
 
     public function preceptor()
     {
-        return $this->users()->where('role', 'preceptor');
+        return $this->users()->where('role', 'preceptor')->first();
     }
 }

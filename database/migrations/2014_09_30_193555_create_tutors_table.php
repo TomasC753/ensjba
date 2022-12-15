@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('lastName');
             $table->string('dni')->unique();
             $table->date('date_birth');
-            $table->enum('gender', ['masculino', 'femenino', 'no binario']);
+            $table->enum('gender', ['masculino', 'femenino', 'otro']);
             $table->string('andress');
             $table->string('country');
             $table->string('phone_number')->nullable();

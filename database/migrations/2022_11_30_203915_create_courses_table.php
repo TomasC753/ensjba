@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->integer('year');
             $table->string('division');
-            $table->enum('type', ['primario', 'secundario', 'terciario']);
+            $table->string('type');
             $table->timestamps();
         });
     }

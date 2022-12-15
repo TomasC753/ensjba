@@ -68,10 +68,15 @@ class User extends Authenticatable
         'date_birth'
     ];
 
-    public function age()
+    public function getAgeAttribute()
     {
         return Carbon::parse($this->date_birth)->age;
     }
+
+    // public function age()
+    // {
+    //     return Carbon::parse($this->date_birth)->age;
+    // }
 
     public function roles()
     {
@@ -85,62 +90,24 @@ class User extends Authenticatable
         return (in_array($role_name, $roles));
     }
 
-    public function scopeSearch($query, String $search_query = '', String $level = '', String $course = '')
+    public function scopeSearch($query, String $role, String $search_query = '', String $level = '', String $course = '')
     {  
-    //    return $query->whereHas('courses', function($q) use ($role, $search_query, $level, $course) {
-    //             $wheres_query = [];
-    //             $wheres_query += ['role' => $role];
-    //             if ($level != '') { 
-    //                 // $wheres_query += ['type' => $level];
-
-    //             }
-    //             if (preg_match('/[0-9](\"|\')[A-z](\"|\')/i', $course)) {
-    //                 $wheres_query += [
-    //                     'year' => preg_replace('/(\"|\')[A-z](\"|\')/i', '', $course),
-    //                     'division' => preg_replace('/\W/i', '', preg_replace('/[0-9]/i', '', $course))
-    //                 ];
-    //             }
-    //             // dump($wheres_query);
-    //             return $q->where($wheres_query)->where(function ($query) use ($search_query) {
-    //                 $query->where('name', 'like', "%$search_query%")
-    //                     ->orWhere('lastName', 'like', "%$search_query%")
-    //                     ->orWhere('DNI', 'like', "%$search_query%")
-    //                     ->orWhere('phone_number', 'like', "%$search_query%")
-    //                     ->orWhere('house_phone_number', 'like', "%$search_query%")
-    //                     ->orWhere('email', 'like', "%$search_query%");
-    //             });
-    //     });
-        $list_ids = array_unique($query->get()->map(function($student) use ($course, $level){
-            $lastCourse = $student->lastCourse();
-            if(!$lastCourse) return;
-            // if(!$lastCourse->role != 'student');
-            if ($level != '' && $lastCourse->type != $level) return;
-            if ($course != '' && preg_match('/[0-9](\"|\')[A-z](\"|\')/i', $course))
-            {
-                if($lastCourse->name() != strtolower($course)) return;
-            }
-        
-            return $student->id;
-        })->filter(function ($item){return $item != null;})->toArray());
-        
-        // return User::whereHas('courses', function($q) use($search_query, $list_ids){
-        //     return $q->whereIn('course_id', $list_ids)->where(function($qq) {return $qq->where('role', 'student');})->where(function($sub_q) use ($search_query){
-        //         return $sub_q->where('name', 'like', "%$search_query%")
-        //                         ->orWhere('lastName', 'like', "%$search_query%")
-        //                         ->orWhere('DNI', 'like', "%$search_query%")
-        //                         ->orWhere('phone_number', 'like', "%$search_query%")
-        //                         ->orWhere('house_phone_number', 'like', "%$search_query%")
-        //                         ->orWhere('email', 'like', "%$search_query%");
-        //     });
-        // });
-        return User::whereIn('id', $list_ids)->where(function($sub_q) use ($search_query){
-                    return $sub_q->where('name', 'like', "%$search_query%")
-                                    ->orWhere('lastName', 'like', "%$search_query%")
-                                    ->orWhere('DNI', 'like', "%$search_query%")
-                                    ->orWhere('phone_number', 'like', "%$search_query%")
-                                    ->orWhere('house_phone_number', 'like', "%$search_query%")
-                                    ->orWhere('email', 'like', "%$search_query%");
-        });
+        if ($role == 'student')
+        {
+            return $query->whereHas('lastCourse', function($q) use($level, $course) {
+                $wheres_query = [];
+                if ($level != '') $wheres_query += ['type' => $level];
+                if (preg_match('/[0-9](\"|\')[A-z](\"|\')/i', $course)) {
+                    $wheres_query += [
+                        'year' => preg_replace('/(\"|\')[A-z](\"|\')/i', '', $course),
+                        'division' => preg_replace('/\W/i', '', preg_replace('/[0-9]/i', '', $course))
+                    ];
+                }
+                return $wheres_query ? $q->where($wheres_query) : $q; 
+            })->where(function($q) use ($search_query) {
+                $q->where('name', 'LIKE', "%$search_query%")->orWhere('lastName', 'LIKE', "%$search_query%")->orWhere('email', 'LIKE', "%$search_query%")->orWhere('phone_number', 'LIKE', "%$search_query%")->orWhere('house_phone_number', 'LIKE', "%$search_query%");
+            });
+        }   
     }
     // -----------------------------------------------------------------------
     // Metodos para estudiantes
@@ -151,30 +118,65 @@ class User extends Authenticatable
         });
     }
 
-    // public function scopellastCourse($query)
-    // {
-    //     return $query->courses->last();
-    // }
-
     public function lastCourse()
     {
-        if (!$this->role_is('student')){
-            throw new Exception('El usuario no es un estudiante');
-        }
+        // if (!$this->role_is('student')){
+        //     throw new Exception('El usuario no es un estudiante');
+        // }
         
-        return $this->belongsToMany(Course::class, 'courses_users')->latest()->withPivot('role', 'subject_id')->withTimestamps()->first();
+        // return $this->belongsToMany(Course::class, 'courses_users')->latest()->withPivot('role', 'subject_id')->withTimestamps()->first();
+        return $this->belongsTo(Course::class, 'lastCourse_id');
     }
 
     public function studentFrom()
     {
         if (!$this->role_is('student')) throw new Exception('El usuario no es un estudiante');
 
-        return $this->lastCourse()->type;
+        return $this->lastCourse->type;
     }
 
     public function tutor()
     {
         return $this->belongsTo(Tutor::class);
+    }
+
+    public function teacher_in_subject($subject)
+    {
+        $lastCourse_id = $this->lastCourse->id;
+        return User::whereHas('courses', function ($q) use ($lastCourse_id, $subject){
+            $q->where([
+                'course_id' => $lastCourse_id,
+                'role' => 'teacher',
+                'subject_id' => $subject,
+            ]);
+        })->first();
+    }
+
+    public function hisQualifications()
+    {
+        return $this->hasMany(Qualification::class, 'student_id');
+    }
+
+    public function subject_hisQualifications(Subject $subject, Course $course)
+    {
+        return $this->hasMany(Qualification::class, 'student_id')->where(['subject_id' => $subject->id, 'course_id' => $course->id]);
+    }
+
+    public function course_generalAverage()
+    {
+        # code...
+    }
+
+    public function subject_generalAverage(Subject $subject)
+    {
+        $average = 0;
+        $qualifications = $this->subject_hisQualifications($subject, $this->lastCourse)->get();
+        foreach($qualifications as $qualification)
+        {
+            $average += $qualification->note;
+        }
+
+        return $average / $qualifications->count();
     }
 
     // -----------------------------------------------------------------------
@@ -194,17 +196,27 @@ class User extends Authenticatable
 
     public function hisStudents()
     {
-        $courses = User::find(1)->dictatedCourses()->get();
-        $courses_id = [];
-        foreach ($courses as $course)
-        {
-            array_push($courses_id, $course->id);
-        }
+        $list_ids = $this->DictatedCourses()->get()->pluck('id')->toArray();
+        return User::students()->whereHas('lastCourse', function($q) use ($list_ids){
+            return $q->whereIn('id', $list_ids);
+        });    
+    }
 
-        return User::whereHas('courses', function ($q) use ($courses_id){
-            return $q->whereIn('course_id', $courses_id)->where('role', 'student');
-        });
-        // return $this->dictatedCourses()->get()->each(function ($course) {return $course->students();});
+    public function subjects_in_course($course)
+    {
+        $list_ids = $this->courses()->whereHas('teachers', function($q) use ($course){
+            return $q->where([
+                'course_id' => $course->id,
+                'user_id' => User::all()->last()->id
+            ]);
+        })->pluck('subject_id')->toArray();
+
+        return Subject::whereIn('id', $list_ids);
+    }
+
+    public function uploadedQualifications()
+    {
+        return $this->hasMany(Qualification::class, 'teacher_id');
     }
     // -----------------------------------------------------------------------
     // -----------------------------------------------------------------------

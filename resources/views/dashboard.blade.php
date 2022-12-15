@@ -27,7 +27,7 @@
                     <h5 class="text-center text-white text-3xl my-3 font-bold">50</h5> 
                 </div>
             </div>
-            <div class="grid grid-cols-4 gap-4 my-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 my-6">
                 <div class="bg-white hover:bg-blue-300 duration-200 cursor-pointer rounded-xl shadow-md py-8 p-4 flex flex-col justify-center items-center">
                     <i class="fa-solid fa-chalkboard text-center text-4xl"></i>
                     <p class="text-center my-6">Cursos</p>

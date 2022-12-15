@@ -25,7 +25,7 @@ class StudentTable extends Component
         if (Auth::user()->role_is('administrator'))
         {
             // dd(User::students()->search($this->search, $this->level, $this->course)->get());
-            $students = User::students()->search($this->search, $this->level, $this->course);
+            $students = User::students()->search('student' ,$this->search, $this->level, $this->course);
         }
         if (Auth::user()->role_is('teacher') || Auth::user()->role_is('preceptor'))
         {

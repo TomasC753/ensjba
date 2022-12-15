@@ -1,8 +1,8 @@
 <div x-data="{open: false}">
     <div x-show="open" @click="open = false" class="min-w-screen min-h-screen bg-gray-800 opacity-20 fixed inset-0" style="z-index: 999"></div>
-    <div class="inset-0 fixed px-3 py-4 overflow-y-auto rounded bg-gray-50 dark:bg-gray-800" :class="open ? 'w-64' : 'w-16'" style="z-index: 1000">
+    <div class="inset-0 fixed px-3 py-4 overflow-y-auto rounded bg-gray-50 dark:bg-gray-900" :class="open ? 'w-64' : 'w-16'" style="z-index: 1000">
         <button @click="open = !open" class="flex justify-start hover:bg-gray-600 p-2 rounded-md w-full">
-            <i class="fa-solid fa-bars text-white text-2xl mr-3"></i>
+            <i class="fa-solid fa-bars text-gray-800 dark:text-white text-2xl mr-3"></i>
             <span x-show="open" class="text-white">Menú</span>
         </button>
         <ul class="space-y-2">

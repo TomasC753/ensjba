@@ -31,11 +31,13 @@ class Qualification extends Model
 
     public function student()
     {
-        return $this->users->withPivot('role', 'student');
+        // return $this->users->withPivot('role', 'student');
+        return $this->belongsTo(User::class, 'student_id');
     }
 
-    public function teachers()
+    public function teacher()
     {
-        return $this->users->wherePivot('role', 'teacher');
+        // return $this->users->wherePivot('role', 'teacher');
+        return $this->belongsTo(User::class, 'teacher_id');
     }
 }

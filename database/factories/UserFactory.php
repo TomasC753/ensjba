@@ -31,7 +31,7 @@ class UserFactory extends Factory
             'lastName' => $this->faker->lastName(),
             'DNI' => $this->faker->dni(),
             'date_birth' => $this->faker->date('d-m-Y','30-12-16'),
-            'gender' => $this->faker->randomElement(['masculino', 'femenino', 'no binario']),
+            'gender' => $this->faker->randomElement(['masculino', 'femenino', 'otro']),
             'andress' => $this->faker->streetAddress(),
             'country' => $this->faker->country(),
             'phone_number' => $this->faker->e164PhoneNumber(),
